@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RansumTernak Pro - Formulasi Pakan Ayam Interaktif</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Font Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        },
+                        corn: {
+                            100: '#fef9c3',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .tab-btn.active {
+            border-bottom: 3px solid #16a34a;
+            color: #15803d;
+            font-weight: 700;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-gradient-to-r from-brand-700 to-brand-800 text-white shadow-lg sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-corn-400 p-2 rounded-xl text-brand-800 shadow">
+                        <i class="fa-solid font-bold fa-egg text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tight">RansumTernak <span class="text-corn-400">Pro</span></h1>
+                        <p class="text-xs text-brand-100">Kalkulator & Formulasi Pakan Ayam Mandiri</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2 text-sm font-medium">
+                    <span class="bg-brand-600/60 px-3 py-1 rounded-full border border-brand-500 text-xs text-brand-100">
+                        <i class="fa-solid fa-leaf mr-1 text-corn-400"></i> Solusi Hemat Pakan Peternak
+                    </span>
+                </div>
+            </div>
+        </div>
+        <!-- Tab Navigation -->
+        <div class="bg-white border-b border-slate-200 shadow-sm text-slate-600">
+            <div class="max-w-7xl mx-auto px-4 flex space-x-6 overflow-x-auto text-sm font-medium">
+                <button onclick="switchTab('calculator')" id="tab-calculator" class="tab-btn active py-3 px-2 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-calculator text-brand-600"></i> Formulasi Ransum
+                </button>
+                <button onclick="switchTab('database')" id="tab-database" class="tab-btn py-3 px-2 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-database text-brand-600"></i> Database Bahan Pakan
+                </button>
+                <button onclick="switchTab('mixing')" id="tab-mixing" class="tab-btn py-3 px-2 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-blender text-brand-600"></i> Panduan Mixing
+                </button>
+                <button onclick="switchTab('management')" id="tab-management" class="tab-btn py-3 px-2 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-wheat-awn text-brand-600"></i> Tips & Manajemen Pakan
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: KALKULATOR FORMULASI RANSUM -->
+        <section id="content-calculator" class="space-y-6">
+            <!-- Selector Jenis Ayam & Standar Target -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-drumstick-bite text-corn-500"></i> Pilih Target Jenis Ayam & Fase Growth
+                        </h2>
+                        <p class="text-xs text-slate-500">Standar nutrisi terisi otomatis berdasarkan rekomendasi akademis & peternakan.</p>
+                    </div>
+                    <div class="w-full md:w-auto">
+                        <select id="poultryTypeSelect" onchange="loadNutrientTarget()" class="w-full md:w-64 p-2.5 bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-brand-500 focus:border-brand-500 font-semibold">
+                            <option value="broiler_starter">Broiler Starter (0 - 3 Minggu)</option>
+                            <option value="broiler_finisher">Broiler Finisher (> 3 Minggu)</option>
+                            <option value="layer_starter">Layer Starter (0 - 6 Minggu)</option>
+                            <option value="layer_grower">Layer Grower (6 - 18 Minggu)</option>
+                            <option value="layer_production" selected>Layer Bertelur / Production (> 18 Minggu)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Cards Grid Standards Nutrisi Target -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-center">
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                        <span class="text-xs text-emerald-700 font-medium block">Protein Kasar (PK)</span>
+                        <span id="target-pk" class="text-xl font-bold text-emerald-800">18.0%</span>
+                        <span class="text-[10px] text-emerald-600 block">Minimal Target</span>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                        <span class="text-xs text-amber-700 font-medium block">Energi (EM)</span>
+                        <span id="target-em" class="text-xl font-bold text-amber-800">2750</span>
+                        <span class="text-[10px] text-amber-600 block">kcal / kg</span>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                        <span class="text-xs text-blue-700 font-medium block">Serat Kasar (SK)</span>
+                        <span id="target-sk" class="text-xl font-bold text-blue-800">&le; 7.0%</span>
+                        <span class="text-[10px] text-blue-600 block">Maksimal</span>
+                    </div>
+                    <div class="bg-purple-50 border border-purple-200 rounded-xl p-3">
+                        <span class="text-xs text-purple-700 font-medium block">Kalsium (Ca)</span>
+                        <span id="target-ca" class="text-xl font-bold text-purple-800">3.80%</span>
+                        <span class="text-[10px] text-purple-600 block">Target Min</span>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-200 rounded-xl p-3">
+                        <span class="text-xs text-rose-700 font-medium block">Fosfor Av. (P)</span>
+                        <span id="target-p" class="text-xl font-bold text-rose-800">0.45%</span>
+                        <span class="text-[10px] text-rose-600 block">Target Min</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto Pearson Square Assistant Box -->
+            <div class="bg-gradient-to-r from-amber-500/10 via-brand-500/10 to-emerald-500/10 border border-brand-200 rounded-2xl p-4 sm:p-5 no-print">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="space-y-1">
+                        <span class="bg-brand-600 text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">Fitur Pintar</span>
+                        <h3 class="text-base font-bold text-slate-800">Auto-Balancing Pearson Square (Dua Bahan Utama)</h3>
+                        <p class="text-xs text-slate-600">Hitung otomatis perbandingan ideal antara 1 Bahan Sumber Energi & 1 Bahan Sumber Protein untuk mencapai Target Protein Kasar (PK).</p>
+                    </div>
+                    <button onclick="showPearsonModal()" class="w-full md:w-auto px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Jalankan Pearson Square
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive Formulation Table & Results -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column (2 Cols): Table Selector Bahan -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-brand-600"></i> Komposisi Bahan Pakan (Per 100 kg Ransum)
+                            </h3>
+                            <button onclick="addIngredientRow()" class="px-3 py-1.5 text-xs bg-brand-100 text-brand-700 hover:bg-brand-200 font-semibold rounded-lg transition-colors flex items-center gap-1">
+                                <i class="fa-solid fa-plus"></i> Tambah Bahan
+                            </button>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left text-slate-600 border-collapse">
+                                <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px]">
+                                    <tr>
+                                        <th class="p-2.5 rounded-l-lg">Bahan Pakan</th>
+                                        <th class="p-2.5 text-center w-24">Jumlah (kg) / %</th>
+                                        <th class="p-2.5 text-right">PK (%)</th>
+                                        <th class="p-2.5 text-right">EM (kcal)</th>
+                                        <th class="p-2.5 text-right">Harga/kg</th>
+                                        <th class="p-2.5 text-right">Subtotal</th>
+                                        <th class="p-2.5 text-center rounded-r-lg w-10">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="formulationTableBody" class="divide-y divide-slate-100">
+                                    <!-- Rows added dynamically via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Table Footer Summary -->
+                    <div class="mt-4 pt-3 border-t border-slate-200 flex flex-wrap justify-between items-center bg-slate-50 p-3 rounded-xl gap-2">
+                        <div class="text-xs">
+                            Total Bobot Formulasi: <span id="totalWeight" class="font-bold text-base text-slate-800">0</span> / 100 kg
+                        </div>
+                        <div id="weightAlert" class="text-xs font-semibold text-amber-600 hidden">
+                            <i class="fa-solid fa-circle-exclamation"></i> Disarankan total bobot tepat 100 kg!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (1 Col): Hasil Nutrisi, Cost Analysis & Graphic -->
+                <div class="space-y-5">
+                    <!-- Nutritional Evaluation Card -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-brand-600"></i> Hasil Evaluasi Nutrisi
+                        </h3>
+
+                        <!-- Progress Bars Nutrisi -->
+                        <div class="space-y-3">
+                            <!-- Protein Kasar -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span>Protein Kasar (PK)</span>
+                                    <span id="result-pk-text">0% / target 18%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div id="bar-pk" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <!-- Energi Metabolisme -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span>Energi Metabolisme (EM)</span>
+                                    <span id="result-em-text">0 / target 2750</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div id="bar-em" class="bg-amber-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <!-- Serat Kasar -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span>Serat Kasar (SK)</span>
+                                    <span id="result-sk-text">0% / max 7%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div id="bar-sk" class="bg-blue-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <!-- Kalsium -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span>Kalsium (Ca)</span>
+                                    <span id="result-ca-text">0% / target 3.8%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div id="bar-ca" class="bg-purple-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <!-- Fosfor -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span>Fosfor Av. (P)</span>
+                                    <span id="result-p-text">0% / target 0.45%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div id="bar-p" class="bg-rose-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pie Chart Component -->
+                        <div class="mt-4 pt-4 border-t border-slate-100">
+                            <span class="text-xs font-semibold text-slate-500 block text-center mb-2">Proporsi Bahan Baku</span>
+                            <div class="h-44 flex justify-center items-center">
+                                <canvas id="compositionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Economic & Savings Card -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-coins text-corn-500"></i> Analisis Biaya Produksi
+                        </h3>
+
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between items-center py-1 border-b border-slate-100">
+                                <span class="text-slate-600 text-xs">Biaya Ransum per Kg:</span>
+                                <span id="costPerKg" class="font-extrabold text-brand-700 text-base">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1 border-b border-slate-100">
+                                <span class="text-slate-600 text-xs">Biaya Per Sak (50 Kg):</span>
+                                <span id="costPer50Kg" class="font-bold text-slate-800">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-slate-600 text-xs">Estimasi Pakan Pabrikan/Kg:</span>
+                                <input type="number" id="commercialPrice" value="8500" oninput="calculateFormulation()" class="w-24 text-right p-1 bg-slate-50 border border-slate-300 rounded text-xs font-semibold">
+                            </div>
+                        </div>
+
+                        <!-- Saving Banner -->
+                        <div class="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-emerald-600 block">Estimasi Hemat / Kg</span>
+                                <span id="savingsPerKg" class="text-sm font-black text-emerald-800">Rp 0 (0%)</span>
+                            </div>
+                            <i class="fa-solid fa-piggy-bank text-emerald-600 text-2xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Print / Export Action Button -->
+                    <button onclick="printFormulation()" class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-sm rounded-xl shadow transition-all flex items-center justify-center gap-2 no-print">
+                        <i class="fa-solid fa-print"></i> Cetak Formulasi Pakan
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: DATABASE BAHAN PAKAN -->
+        <section id="content-database" class="space-y-6 hidden">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-database text-brand-600"></i> Database Bahan Pakan Lokal
+                        </h2>
+                        <p class="text-xs text-slate-500">Daftar standar kandungan nutrisi, limitasi penggunaan maksimum, dan estimasi harga pasaran.</p>
+                    </div>
+                    <button onclick="showAddCustomMaterialModal()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Tambah Bahan Baru
+                    </button>
+                </div>
+
+                <!-- Database Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left text-slate-600">
+                        <thead class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px]">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">Bahan Pakan</th>
+                                <th class="p-3 text-center">Kategori</th>
+                                <th class="p-3 text-right">PK (%)</th>
+                                <th class="p-3 text-right">EM (kcal/kg)</th>
+                                <th class="p-3 text-right">SK (%)</th>
+                                <th class="p-3 text-right">Ca (%)</th>
+                                <th class="p-3 text-right">P Av (%)</th>
+                                <th class="p-3 text-center">Batas Max (%)</th>
+                                <th class="p-3 text-right">Harga Est. / kg</th>
+                            </tr>
+                        </thead>
+                        <tbody id="databaseTableBody" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: PANDUAN MIXING -->
+        <section id="content-mixing" class="space-y-6 hidden">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-blender text-brand-600"></i> Prosedur Pencampuran Pakan Mandiri (Self-Mixing)
+                </h2>
+                <p class="text-sm text-slate-600 mb-6">Pencampuran yang merata (homogen) sangat penting agar setiap patukan ayam mendapatkan keseimbangan nutrisi yang seragam.</p>
+
+                <!-- Steps Timeline -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 relative">
+                        <span class="absolute -top-3 left-4 bg-brand-600 text-white w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs">1</span>
+                        <h3 class="font-bold text-slate-800 text-base mt-2 mb-2">Persiapan & Micro Mixing</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Timbang semua bahan baku dengan presisi. Untuk premix, asam amino sintetis, DCP/Kapur, dan vitamin (bahan micro < 1%), campurkan terlebih dahulu secara terpisah dengan sedikit bahan pembawa seperti dedak halus (1-2 kg) hingga benar-benar merata.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 relative">
+                        <span class="absolute -top-3 left-4 bg-brand-600 text-white w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs">2</span>
+                        <h3 class="font-bold text-slate-800 text-base mt-2 mb-2">Macro Mixing Layering</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Aplikasi metode lapis (sandwich): tebarkan bahan berporsi terbesar di lantai/mixer (contoh: Jagung), diikuti bahan sedang (Bungkil Kedelai/Tepung Ikan), lalu masukkan hasil racikan micro mixing di lapisan tengah, dan tutup kembali dengan sisa bahan utama.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 relative">
+                        <span class="absolute -top-3 left-4 bg-brand-600 text-white w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs">3</span>
+                        <h3 class="font-bold text-slate-800 text-base mt-2 mb-2">Pengadukan & Homogenitas</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Jika menggunakan mixer vertikal/horizontal, aduk selama 10-15 menit. Jika menggunakan sekop manual, lakukan pembalikan adonan minimal 4-5 kali berpindah tempat secara diagonal hingga warna dan tekstur terlihat sejenis.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Oil Addition Pro-Tip Box -->
+                <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                    <i class="fa-solid fa-lightbulb text-amber-500 text-xl mt-0.5"></i>
+                    <div>
+                        <h4 class="text-xs font-bold text-amber-900">Tips Penambahan Minyak / CPO:</h4>
+                        <p class="text-xs text-amber-800 mt-1">
+                            Jika formulasi menggunakan minyak kelapa/sawit, semprotkan atau tuangkan minyak secara perlahan di tahap akhir setelah adonan bahan kering sudah tercampur awal. Jangan mencampur minyak langsung dengan bahan mikro tepung karena bisa menggumpal.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: TIPS MANAGEMENT PAKAN -->
+        <section id="content-management" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card 1: Penyimpanan Bahan Baku -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-warehouse text-brand-600"></i> Manajamen Gudang & Penyimpanan
+                    </h3>
+                    <ul class="space-y-2 text-xs text-slate-600">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-check text-brand-500 mt-0.5"></i>
+                            <span><strong>Gunakan Palet Kayu:</strong> Alasi karung pakan dengan palet minimal 10-15 cm dari lantai beton agar tidak menyerap kelembapan bumi.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-check text-brand-500 mt-0.5"></i>
+                            <span><strong>Kadar Air Aman:</strong> Pastikan jagung memiliki kadar air maksimal 14% untuk mencegah jamur penghasil racun Aflatoksin.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-check text-brand-500 mt-0.5"></i>
+                            <span><strong>Sistem FIFO:</strong> Terapkan sistem <em>First-In, First-Out</em> (Bahan masuk lebih dulu harus dipakai lebih dulu).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-check text-brand-500 mt-0.5"></i>
+                            <span><strong>Sirkulasi Udara:</strong> Jaga ventilasi gudang tetap baik, tidak bocor saat hujan, dan terhindar dari sinar matahari langsung.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Card 2: Kontrol Kualitas & Antinutrisi -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Faktor Antinutrisi & Ciri Bahan Jelek
+                    </h3>
+                    <ul class="space-y-2 text-xs text-slate-600">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-xmark text-rose-500 mt-0.5"></i>
+                            <span><strong>Dedak Halus Pemalsuan:</strong> Hati-hati dedak dicampur sekam giling. Uji sederhana: masukkan dedak ke air, sekam giling akan terapung cepat.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-xmark text-rose-500 mt-0.5"></i>
+                            <span><strong>Tepung Ikan Tengik:</strong> Hindari tepung ikan yang berbau sangat tengik atau berkadar garam tinggi yang memicu diare basah pada ternak.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-xmark text-rose-500 mt-0.5"></i>
+                            <span><strong>Bungkil Kedelai Mentah:</strong> SBM harus sudah diolah thermal untuk menghilangkan faktor anti-nutrisi Inhibitor Tripsin.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs no-print mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>&copy; 2026 RansumTernak Pro - Aplikasi Formulasi Pakan Ayam Interaktif Indonesia.</p>
+            <p class="text-[10px] text-slate-500 mt-1">Dibuat untuk peternak mandiri, mahasiswa peternakan, dan praktisi perunggasan.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL: Pearson Square Auto-Calculator -->
+    <div id="pearsonModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-brand-600"></i> Pearson Square Calculator
+                </h3>
+                <button onclick="closePearsonModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-600">
+                Pilih 1 bahan rendah protein (Energi) & 1 bahan tinggi protein. Sistem akan menghitung proporsi persentase yang dibutuhkan secara presisi.
+            </p>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target PK Ransum (%):</label>
+                    <input type="number" id="psTargetPk" value="18" step="0.1" class="w-full p-2 text-xs border border-slate-300 rounded-lg font-bold text-brand-700">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Bahan 1 (Rendah PK):</label>
+                        <select id="psMat1" class="w-full p-2 text-xs border border-slate-300 rounded-lg"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Bahan 2 (Tinggi PK):</label>
+                        <select id="psMat2" class="w-full p-2 text-xs border border-slate-300 rounded-lg"></select>
+                    </div>
+                </div>
+
+                <!-- Result Box Pearson -->
+                <div id="psResultBox" class="p-3 bg-slate-50 border border-slate-200 rounded-xl hidden text-xs space-y-1">
+                    <div class="font-bold text-slate-800 border-b border-slate-200 pb-1">Hasil Perhitungan:</div>
+                    <div id="psResultText" class="text-slate-700 space-y-1"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="calculatePearsonSquare()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow">Hitung Proporsi</button>
+                <button onclick="applyPearsonToFormulation()" id="btnApplyPearson" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-xl shadow hidden">Terapkan ke Formulasi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Tambah Bahan Kustom -->
+    <div id="customMatModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base">Tambah Bahan Pakan Kustom</h3>
+                <button onclick="closeCustomMatModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="customMatForm" onsubmit="saveCustomMaterial(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Nama Bahan Pakan:</label>
+                    <input type="text" id="cmName" required class="w-full p-2 border border-slate-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">PK (%):</label>
+                        <input type="number" step="0.01" id="cmPk" required class="w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">EM (kcal/kg):</label>
+                        <input type="number" step="1" id="cmEm" required class="w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">SK (%):</label>
+                        <input type="number" step="0.01" id="cmSk" value="0" class="w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Ca (%):</label>
+                        <input type="number" step="0.01" id="cmCa" value="0" class="w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">P Av (%):</label>
+                        <input type="number" step="0.01" id="cmP" value="0" class="w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">Batas Max (%):</label>
+                        <input type="number" step="1" id="cmMax" value="100" class="w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Harga Est / kg (Rp):</label>
+                        <input type="number" step="50" id="cmPrice" value="5000" class="w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeCustomMatModal()" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-1.5 bg-brand-600 text-white font-semibold rounded-lg">Simpan Bahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Data Standar Target Ayam (NRC / Indonesia Standard)
+        const poultryTargets = {
+            broiler_starter: { name: 'Broiler Starter', pk: 22.0, em: 3000, sk: 4.0, ca: 1.00, p: 0.45 },
+            broiler_finisher: { name: 'Broiler Finisher', pk: 20.0, em: 3100, sk: 5.0, ca: 0.90, p: 0.40 },
+            layer_starter: { name: 'Layer Starter', pk: 19.0, em: 2800, sk: 5.0, ca: 1.00, p: 0.45 },
+            layer_grower: { name: 'Layer Grower', pk: 15.5, em: 2700, sk: 6.5, ca: 1.10, p: 0.40 },
+            layer_production: { name: 'Layer Bertelur (Production)', pk: 18.0, em: 2750, sk: 7.0, ca: 3.80, p: 0.45 }
+        };
+
+        // Master Database Bahan Pakan Lokal Indonesia
+        let rawMaterials = [
+            { id: 'jagung', name: 'Jagung Kuning Giling', category: 'Energi', pk: 8.5, em: 3370, sk: 2.2, ca: 0.02, p: 0.10, max: 65, price: 5200 },
+            { id: 'dedak', name: 'Dedak Halus / Katul', category: 'Energi', pk: 12.0, em: 2100, sk: 11.5, ca: 0.10, p: 0.20, max: 25, price: 3800 },
+            { id: 'sbm', name: 'Bungkil Kedelai (SBM)', category: 'Protein', pk: 44.0, em: 2230, sk: 6.0, ca: 0.30, p: 0.25, max: 35, price: 8200 },
+            { id: 'tepung_ikan', name: 'Tepung Ikan Lokal (60%)', category: 'Protein', pk: 60.0, em: 2800, sk: 1.5, ca: 5.00, p: 2.80, max: 10, price: 14500 },
+            { id: 'mbm', name: 'Meat Bone Meal (MBM)', category: 'Protein', pk: 50.0, em: 2500, sk: 2.5, ca: 8.00, p: 4.00, max: 7, price: 11000 },
+            { id: 'minyak', name: 'Minyak Sawit / CPO', category: 'Energi', pk: 0.0, em: 8600, sk: 0.0, ca: 0.00, p: 0.00, max: 4, price: 15000 },
+            { id: 'kapur', name: 'Tepung Batu Kapur (Grit Ca)', category: 'Mineral', pk: 0.0, em: 0, sk: 0.0, ca: 38.00, p: 0.00, max: 10, price: 800 },
+            { id: 'dcp', name: 'Dicalcium Phosphate (DCP)', category: 'Mineral', pk: 0.0, em: 0, sk: 0.0, ca: 21.00, p: 18.00, max: 2, price: 12500 },
+            { id: 'premix', name: 'Premix Vitamin & Mineral', category: 'Suplemen', pk: 0.0, em: 0, sk: 0.0, ca: 0.00, p: 0.00, max: 1, price: 28000 }
+        ];
+
+        // Active formulation rows array: { materialId, weight }
+        let currentFormulation = [
+            { materialId: 'jagung', weight: 52 },
+            { materialId: 'dedak', weight: 10 },
+            { materialId: 'sbm', weight: 22 },
+            { materialId: 'tepung_ikan', weight: 6 },
+            { materialId: 'kapur', weight: 8 },
+            { materialId: 'dcp', weight: 1.5 },
+            { materialId: 'premix', weight: 0.5 }
+        ];
+
+        let compositionChart = null;
+        let lastPearsonCalculated = null;
+
+        // --- INIT & TAB SWITCHING ---
+        window.onload = function() {
+            renderDatabaseTable();
+            loadNutrientTarget();
+            initChart();
+            renderFormulationTable();
+        };
+
+        function switchTab(tabName) {
+            const tabs = ['calculator', 'database', 'mixing', 'management'];
+            tabs.forEach(t => {
+                document.getElementById(`content-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('active');
+            });
+
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // --- TARGET & CALCULATION LOGIC ---
+        function loadNutrientTarget() {
+            const selectedType = document.getElementById('poultryTypeSelect').value;
+            const target = poultryTargets[selectedType];
+
+            document.getElementById('target-pk').innerText = `${target.pk.toFixed(1)}%`;
+            document.getElementById('target-em').innerText = `${target.em}`;
+            document.getElementById('target-sk').innerText = `≤ ${target.sk.toFixed(1)}%`;
+            document.getElementById('target-ca').innerText = `${target.ca.toFixed(2)}%`;
+            document.getElementById('target-p').innerText = `${target.p.toFixed(2)}%`;
+
+            calculateFormulation();
+        }
+
+        function renderFormulationTable() {
+            const tbody = document.getElementById('formulationTableBody');
+            tbody.innerHTML = '';
+
+            currentFormulation.forEach((item, index) => {
+                const mat = rawMaterials.find(m => m.id === item.materialId) || rawMaterials[0];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+
+                let optionsHtml = rawMaterials.map(m => 
+                    `<option value="${m.id}" ${m.id === item.materialId ? 'selected' : ''}>${m.name}</option>`
+                ).join('');
+
+                const subtotalPrice = (mat.price * (item.weight || 0)).toLocaleString('id-ID');
+
+                tr.innerHTML = `
+                    <td class="p-2">
+                        <select onchange="updateRowMaterial(${index}, this.value)" class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800">
+                            ${optionsHtml}
+                        </select>
+                    </td>
+                    <td class="p-2">
+                        <input type="number" step="0.1" value="${item.weight}" oninput="updateRowWeight(${index}, this.value)" class="w-full text-center p-1.5 border border-slate-300 rounded-lg font-bold text-slate-800 focus:ring-brand-500">
+                    </td>
+                    <td class="p-2 text-right font-medium">${mat.pk}%</td>
+                    <td class="p-2 text-right font-medium">${mat.em}</td>
+                    <td class="p-2 text-right">Rp ${mat.price.toLocaleString('id-ID')}</td>
+                    <td class="p-2 text-right font-bold text-slate-700">Rp ${subtotalPrice}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="removeRow(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            calculateFormulation();
+        }
+
+        function updateRowMaterial(index, newMatId) {
+            currentFormulation[index].materialId = newMatId;
+            renderFormulationTable();
+        }
+
+        function updateRowWeight(index, newWeight) {
+            currentFormulation[index].weight = parseFloat(newWeight) || 0;
+            calculateFormulation();
+        }
+
+        function addIngredientRow() {
+            currentFormulation.push({ materialId: rawMaterials[0].id, weight: 0 });
+            renderFormulationTable();
+        }
+
+        function removeRow(index) {
+            if (currentFormulation.length <= 1) return;
+            currentFormulation.splice(index, 1);
+            renderFormulationTable();
+        }
+
+        function calculateFormulation() {
+            let totalWeight = 0;
+            let totalPk = 0;
+            let totalEm = 0;
+            let totalSk = 0;
+            let totalCa = 0;
+            let totalP = 0;
+            let totalPrice = 0;
+
+            currentFormulation.forEach(item => {
+                const mat = rawMaterials.find(m => m.id === item.materialId);
+                if (mat) {
+                    const w = item.weight || 0;
+                    totalWeight += w;
+                    totalPk += (mat.pk * w) / 100;
+                    totalEm += (mat.em * w) / 100;
+                    totalSk += (mat.sk * w) / 100;
+                    totalCa += (mat.ca * w) / 100;
+                    totalP += (mat.p * w) / 100;
+                    totalPrice += mat.price * w;
+                }
+            });
+
+            // Update Total Weight Summary
+            document.getElementById('totalWeight').innerText = totalWeight.toFixed(1);
+            const alertElem = document.getElementById('weightAlert');
+            if (Math.abs(totalWeight - 100) > 0.5) {
+                alertElem.classList.remove('hidden');
+            } else {
+                alertElem.classList.add('hidden');
+            }
+
+            // Target comparisons
+            const selectedType = document.getElementById('poultryTypeSelect').value;
+            const target = poultryTargets[selectedType];
+
+            // Normalize nutrients per 100kg if totalWeight != 0
+            const factor = totalWeight > 0 ? (100 / totalWeight) : 0;
+            const normPk = totalPk * factor;
+            const normEm = totalEm * factor;
+            const normSk = totalSk * factor;
+            const normCa = totalCa * factor;
+            const normP = totalP * factor;
+
+            // Render Results Bars
+            updateNutrientBar('pk', normPk, target.pk, '%');
+            updateNutrientBar('em', normEm, target.em, '');
+            updateNutrientBar('sk', normSk, target.sk, '%', true); // SK is upper limit
+            updateNutrientBar('ca', normCa, target.ca, '%');
+            updateNutrientBar('p', normP, target.p, '%');
+
+            // Cost calculation
+            const costPerKg = totalWeight > 0 ? totalPrice / totalWeight : 0;
+            const costPer50Kg = costPerKg * 50;
+            const commPrice = parseFloat(document.getElementById('commercialPrice').value) || 8500;
+            const savings = commPrice - costPerKg;
+            const savingsPercent = commPrice > 0 ? (savings / commPrice) * 100 : 0;
+
+            document.getElementById('costPerKg').innerText = `Rp ${Math.round(costPerKg).toLocaleString('id-ID')}`;
+            document.getElementById('costPer50Kg').innerText = `Rp ${Math.round(costPer50Kg).toLocaleString('id-ID')}`;
+
+            const savingsElem = document.getElementById('savingsPerKg');
+            if (savings >= 0) {
+                savingsElem.innerText = `Rp ${Math.round(savings).toLocaleString('id-ID')} (${savingsPercent.toFixed(1)}%)`;
+                savingsElem.className = "text-sm font-black text-emerald-800";
+            } else {
+                savingsElem.innerText = `Lebih Mahal Rp ${Math.abs(Math.round(savings)).toLocaleString('id-ID')}`;
+                savingsElem.className = "text-sm font-black text-rose-700";
+            }
+
+            updateChart();
+        }
+
+        function updateNutrientBar(id, val, targetVal, unit, isMax = false) {
+            const textElem = document.getElementById(`result-${id}-text`);
+            const barElem = document.getElementById(`bar-${id}`);
+
+            const pctOfTarget = targetVal > 0 ? Math.min((val / targetVal) * 100, 100) : 0;
+            barElem.style.width = `${pctOfTarget}%`;
+
+            let displayVal = unit === '%' ? `${val.toFixed(2)}%` : `${Math.round(val)}`;
+            let targetDisplay = unit === '%' ? `${targetVal.toFixed(1)}%` : `${targetVal}`;
+
+            textElem.innerText = `${displayVal} / ${isMax ? 'max ' : ''}${targetDisplay}`;
+
+            // Dynamic color
+            if (!isMax) {
+                if (val >= targetVal) {
+                    barElem.className = "bg-emerald-500 h-2.5 rounded-full transition-all duration-300";
+                } else if (val >= targetVal * 0.9) {
+                    barElem.className = "bg-amber-400 h-2.5 rounded-full transition-all duration-300";
+                } else {
+                    barElem.className = "bg-rose-500 h-2.5 rounded-full transition-all duration-300";
+                }
+            } else {
+                if (val <= targetVal) {
+                    barElem.className = "bg-blue-500 h-2.5 rounded-full transition-all duration-300";
+                } else {
+                    barElem.className = "bg-rose-500 h-2.5 rounded-full transition-all duration-300";
+                }
+            }
+        }
+
+        // --- CHART.JS INTEGRATION ---
+        function initChart() {
+            const ctx = document.getElementById('compositionChart').getContext('2d');
+            compositionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#eab308', '#22c55e', '#3b82f6', '#ec4899', 
+                            '#a855f7', '#f97316', '#64748b', '#14b8a6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            if (!compositionChart) return;
+            const labels = [];
+            const data = [];
+
+            currentFormulation.forEach(item => {
+                if (item.weight > 0) {
+                    const mat = rawMaterials.find(m => m.id === item.materialId);
+                    labels.push(mat ? mat.name : item.materialId);
+                    data.push(item.weight);
+                }
+            });
+
+            compositionChart.data.labels = labels;
+            compositionChart.data.datasets[0].data = data;
+            compositionChart.update();
+        }
+
+        // --- PEARSON SQUARE CALCULATOR ---
+        function showPearsonModal() {
+            const m1Select = document.getElementById('psMat1');
+            const m2Select = document.getElementById('psMat2');
+
+            m1Select.innerHTML = rawMaterials.map(m => `<option value="${m.id}" ${m.id === 'jagung' ? 'selected' : ''}>${m.name} (PK ${m.pk}%)</option>`).join('');
+            m2Select.innerHTML = rawMaterials.map(m => `<option value="${m.id}" ${m.id === 'sbm' ? 'selected' : ''}>${m.name} (PK ${m.pk}%)</option>`).join('');
+
+            const selectedType = document.getElementById('poultryTypeSelect').value;
+            document.getElementById('psTargetPk').value = poultryTargets[selectedType].pk;
+
+            document.getElementById('psResultBox').classList.add('hidden');
+            document.getElementById('btnApplyPearson').classList.add('hidden');
+            document.getElementById('pearsonModal').classList.remove('hidden');
+        }
+
+        function closePearsonModal() {
+            document.getElementById('pearsonModal').classList.add('hidden');
+        }
+
+        function calculatePearsonSquare() {
+            const targetPk = parseFloat(document.getElementById('psTargetPk').value);
+            const m1Id = document.getElementById('psMat1').value;
+            const m2Id = document.getElementById('psMat2').value;
+
+            const mat1 = rawMaterials.find(m => m.id === m1Id);
+            const mat2 = rawMaterials.find(m => m.id === m2Id);
+
+            if (mat1.id === mat2.id) {
+                alert('Pilih dua bahan yang berbeda!');
+                return;
+            }
+
+            // Pearson logic
+            const part1 = Math.abs(mat2.pk - targetPk);
+            const part2 = Math.abs(mat1.pk - targetPk);
+            const totalParts = part1 + part2;
+
+            if (totalParts === 0 || (targetPk < Math.min(mat1.pk, mat2.pk) || targetPk > Math.max(mat1.pk, mat2.pk))) {
+                document.getElementById('psResultBox').classList.remove('hidden');
+                document.getElementById('psResultText').innerHTML = `<span class="text-rose-600 font-semibold">Target PK (${targetPk}%) harus di antara PK ${mat1.name} (${mat1.pk}%) dan ${mat2.name} (${mat2.pk}%).</span>`;
+                document.getElementById('btnApplyPearson').classList.add('hidden');
+                return;
+            }
+
+            const pct1 = (part1 / totalParts) * 100;
+            const pct2 = (part2 / totalParts) * 100;
+
+            lastPearsonCalculated = [
+                { materialId: mat1.id, weight: parseFloat(pct1.toFixed(1)) },
+                { materialId: mat2.id, weight: parseFloat(pct2.toFixed(1)) }
+            ];
+
+            document.getElementById('psResultBox').classList.remove('hidden');
+            document.getElementById('psResultText').innerHTML = `
+                <div>• <strong>${mat1.name}</strong>: ${pct1.toFixed(1)} kg (${pct1.toFixed(1)}%)</div>
+                <div>• <strong>${mat2.name}</strong>: ${pct2.toFixed(1)} kg (${pct2.toFixed(1)}%)</div>
+                <div class="text-[10px] text-slate-500 mt-1">*Total 100 kg campuran dua bahan ini menghasilkan persis PK ${targetPk}%.</div>
+            `;
+            document.getElementById('btnApplyPearson').classList.remove('hidden');
+        }
+
+        function applyPearsonToFormulation() {
+            if (lastPearsonCalculated) {
+                currentFormulation = [...lastPearsonCalculated];
+                renderFormulationTable();
+                closePearsonModal();
+            }
+        }
+
+        // --- DATABASE RENDER & CUSTOM MATERIAL ---
+        function renderDatabaseTable() {
+            const tbody = document.getElementById('databaseTableBody');
+            tbody.innerHTML = '';
+
+            rawMaterials.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-800">${m.name}</td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${m.category==='Protein'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}">${m.category}</span></td>
+                    <td class="p-3 text-right font-medium text-emerald-700">${m.pk}%</td>
+                    <td class="p-3 text-right font-medium text-amber-700">${m.em}</td>
+                    <td class="p-3 text-right">${m.sk}%</td>
+                    <td class="p-3 text-right">${m.ca}%</td>
+                    <td class="p-3 text-right">${m.p}%</td>
+                    <td class="p-3 text-center font-bold text-slate-700">${m.max}%</td>
+                    <td class="p-3 text-right font-semibold">Rp ${m.price.toLocaleString('id-ID')}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showAddCustomMaterialModal() {
+            document.getElementById('customMatModal').classList.remove('hidden');
+        }
+
+        function closeCustomMatModal() {
+            document.getElementById('customMatModal').classList.add('hidden');
+        }
+
+        function saveCustomMaterial(e) {
+            e.preventDefault();
+            const newMat = {
+                id: 'custom_' + Date.now(),
+                name: document.getElementById('cmName').value,
+                category: parseFloat(document.getElementById('cmPk').value) > 20 ? 'Protein' : 'Energi',
+                pk: parseFloat(document.getElementById('cmPk').value),
+                em: parseFloat(document.getElementById('cmEm').value),
+                sk: parseFloat(document.getElementById('cmSk').value),
+                ca: parseFloat(document.getElementById('cmCa').value),
+                p: parseFloat(document.getElementById('cmP').value),
+                max: parseFloat(document.getElementById('cmMax').value),
+                price: parseFloat(document.getElementById('cmPrice').value)
+            };
+
+            rawMaterials.push(newMat);
+            renderDatabaseTable();
+            renderFormulationTable();
+            closeCustomMatModal();
+            document.getElementById('customMatForm').reset();
+        }
+
+        // --- PRINT FUNCTIONALITY ---
+        function printFormulation() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
